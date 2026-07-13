@@ -1,0 +1,9 @@
+me gustaria que las acciones argentinas y los cedear esten en  paneles separados. ademas que se puede ingresar a ver cada ticker en su pagina propia con sus caracteristicas y grafico de velas. en el caso de los bonos tambien que se pueda acceder a pagina separada via link en el ticker para ver sus caracteristicas propias de bono como tir, duration, parridad, etc.
+
+sigue igual. no hubo cambios. 
+en la tabla de bonos  y dolares me gustaria estas columnas; Precio	TIR	duration variacion 	Vol(M)	Paridad.  con su respectivo valor calculado en el caso de la tir y la paridad. el grafico de velas tambien esta mal. son todos iguales. necesito que sea con datos reales de las api
+
+cd C:\Users\crist\OneDrive\Documentos\codex
+npm.cmd run dev -- --hostname 127.0.0.1 --port 3000
+
+npx skills add gauss314/skills

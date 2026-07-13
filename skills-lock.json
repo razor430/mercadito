@@ -1,0 +1,107 @@
+{
+  "version": 1,
+  "skills": {
+    "alpaca-data": {
+      "source": "gauss314/skills",
+      "sourceType": "github",
+      "skillPath": "skills/alpaca-data/SKILL.md",
+      "computedHash": "1d99ce881b42017b2fa1542308a0d56590b98352787c5de4bac030efacdae897"
+    },
+    "alpaca-trading": {
+      "source": "gauss314/skills",
+      "sourceType": "github",
+      "skillPath": "skills/alpaca-trading/SKILL.md",
+      "computedHash": "84ba24f23f8ef6af8218aad11f108d89b21f6bbce4d4bd24bb89cb4a6c92ffee"
+    },
+    "alpha-vantage": {
+      "source": "gauss314/skills",
+      "sourceType": "github",
+      "skillPath": "skills/alpha-vantage/SKILL.md",
+      "computedHash": "d488a95284cb67671c478a53635849ac62e94b2fe4235875f0bcd9dc6fe4aa52"
+    },
+    "barchart": {
+      "source": "gauss314/skills",
+      "sourceType": "github",
+      "skillPath": "skills/barchart/SKILL.md",
+      "computedHash": "f5e216ac125f83e310113c6e2647e8b2c3223d448843e55cbcb5c0a573847651"
+    },
+    "bcra-macro": {
+      "source": "gauss314/skills",
+      "sourceType": "github",
+      "skillPath": "skills/bcra-macro/SKILL.md",
+      "computedHash": "519738d5b2b768d62c3713442447d1d4ac536f584a5e81a347e760954d761c6a"
+    },
+    "byma": {
+      "source": "gauss314/skills",
+      "sourceType": "github",
+      "skillPath": "skills/byma/SKILL.md",
+      "computedHash": "1e066299fa090d58a11c44c05b171ede6d20f5ad47e28e544ffe2074f4219996"
+    },
+    "cafci": {
+      "source": "gauss314/skills",
+      "sourceType": "github",
+      "skillPath": "skills/cafci/SKILL.md",
+      "computedHash": "8b3c46e92daa5de47ba4586c48cced52da0270abcb82c89fd46a047ff1678896"
+    },
+    "data912": {
+      "source": "gauss314/skills",
+      "sourceType": "github",
+      "skillPath": "skills/data912/SKILL.md",
+      "computedHash": "348399f4cfe453c87b64d7c27ae8b94f60c96ffedbcbac239aeb35c6bdf0911e"
+    },
+    "google-finance": {
+      "source": "gauss314/skills",
+      "sourceType": "github",
+      "skillPath": "skills/google-finance/SKILL.md",
+      "computedHash": "d9d6f0eb2e710a6bc56f93d17ab92eb5c6bad341a82b5fad8c8a20d8ff04f5f1"
+    },
+    "indec": {
+      "source": "gauss314/skills",
+      "sourceType": "github",
+      "skillPath": "skills/indec/SKILL.md",
+      "computedHash": "800f450be3307fcaab597fd41ca2ac22478d76b590d4d23005827f2029fd0b0c"
+    },
+    "investing": {
+      "source": "gauss314/skills",
+      "sourceType": "github",
+      "skillPath": "skills/investing/SKILL.md",
+      "computedHash": "253f4ec119f3de113b4698a4e71dd675daf2434877648776c258bf9bdb1f8752"
+    },
+    "mae": {
+      "source": "gauss314/skills",
+      "sourceType": "github",
+      "skillPath": "skills/mae/SKILL.md",
+      "computedHash": "c1b1c4078dfbf0f419ddf344990ace96a951979295859909925e0f718b3b65c1"
+    },
+    "portfolio": {
+      "source": "gauss314/skills",
+      "sourceType": "github",
+      "skillPath": "skills/portfolio/SKILL.md",
+      "computedHash": "25060417f9d2d3ba1d5ba2e50e0732330269b7e46a449247b6a8bd4f3d30bbdf"
+    },
+    "tradingview": {
+      "source": "gauss314/skills",
+      "sourceType": "github",
+      "skillPath": "skills/tradingview/SKILL.md",
+      "computedHash": "e51086d92b85129c81013df2f59b089b50596ee6e1255329974e00a87e354aae"
+    },
+    "ui-ux-pro-max-skill": {
+      "source": "aradotso/trending-skills",
+      "sourceType": "github",
+      "skillPath": "skills/ui-ux-pro-max-skill/SKILL.md",
+      "computedHash": "5468b05b7eebdb29865e456ac81f827e83fd507e1b9ec96882535475387d4a2a"
+    },
+    "vercel-react-best-practices": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/react-best-practices/SKILL.md",
+      "computedHash": "ca7b0c0c6e5f2750043f7f0cd72d16ac4e2abc48f9b5500d047a4b77a2506212"
+    },
+    "yahoo-finance": {
+      "source": "gauss314/skills",
+      "sourceType": "github",
+      "skillPath": "skills/yahoo-finance/SKILL.md",
+      "computedHash": "aad3d4891e59d3c9f9beeb9fa298e7aa6849bd4a9be8262d8de603e5f1f59bf1"
+    }
+  }
+}

@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --background: #eef3ef;
+  --foreground: #17211b;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #0f1512;
+  --foreground: #e8eee9;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background:
+    linear-gradient(180deg, rgba(247, 249, 246, 0.96), rgba(238, 243, 239, 0.98)),
+    #eef3ef;
+  color: var(--foreground);
+  font-family: Inter, Arial, Helvetica, sans-serif;
+}
+
+.dark body {
+  background:
+    linear-gradient(180deg, rgba(15, 21, 18, 0.98), rgba(20, 27, 24, 0.98)),
+    #0f1512;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid #087a3d;
+  outline-offset: 2px;
+}
+
+.numeric {
+  font-variant-numeric: tabular-nums;
+}
+
+.table-scroll {
+  scrollbar-color: #aab8af transparent;
+  scrollbar-width: thin;
+}
+
+.dark .table-scroll {
+  scrollbar-color: #526258 transparent;
+}
+
+.dark .border-line {
+  border-color: #334155;
+}
+
+.dark .bg-white,
+.dark .bg-panel {
+  background-color: #0f172a;
+}
+
+.dark .text-ink {
+  color: #f1f5f9;
+}
+
+.dark .text-ink\/75,
+.dark .text-ink\/70,
+.dark .text-ink\/65 {
+  color: #cbd5e1;
+}
+
+.dark .text-ink\/60,
+.dark .text-ink\/55 {
+  color: #94a3b8;
+}
+
+.dark .text-ink\/45,
+.dark .text-ink\/35 {
+  color: #64748b;
+}

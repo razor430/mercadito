@@ -1,0 +1,18 @@
+node_modules/
+.next/
+out/
+
+# Local development logs
+*.log
+
+# TypeScript build metadata
+*.tsbuildinfo
+
+# Local Codex configuration and skills
+.agents/
+.codex/
+
+# Environment files
+.env*
+!.env.example
+node_modules
