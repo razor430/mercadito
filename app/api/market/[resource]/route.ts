@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   getBonds,
+  getArgentinaIndicators,
   getCommodities,
   getCurrencies,
   getHistory,
@@ -33,6 +34,8 @@ export async function GET(request: NextRequest, { params }: Params) {
         return NextResponse.json(await getBonds());
       case "currencies":
         return NextResponse.json(await getCurrencies());
+      case "argentina-indicators":
+        return NextResponse.json(await getArgentinaIndicators());
       case "commodities":
         return NextResponse.json(await getCommodities());
       case "history":

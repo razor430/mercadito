@@ -1,12 +1,12 @@
 import { Dashboard } from "@/components/dashboard";
-import { getBonds, getCommodities, getCurrencies, getNews, getOverview, getStocks } from "@/lib/market-service";
+import { getArgentinaIndicators, getBonds, getCommodities, getNews, getOverview, getStocks } from "@/lib/market-service";
 
 export default async function Home() {
-  const [overview, stocks, bonds, currencies, commodities, news] = await Promise.all([
+  const [overview, stocks, bonds, argentinaIndicators, commodities, news] = await Promise.all([
     getOverview(),
     getStocks(),
     getBonds(),
-    getCurrencies(),
+    getArgentinaIndicators(),
     getCommodities(),
     getNews()
   ]);
@@ -16,7 +16,7 @@ export default async function Home() {
       initialOverview={overview}
       initialStocks={stocks}
       initialBonds={bonds}
-      initialCurrencies={currencies}
+      initialArgentinaIndicators={argentinaIndicators}
       initialCommodities={commodities}
       initialNews={news}
     />

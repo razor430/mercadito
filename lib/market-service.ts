@@ -1,16 +1,18 @@
 import { cached, ttl } from "@/lib/cache";
 import { isFeaturedDollarBond } from "@/lib/bond-filters";
 import {
+  fallbackArgentinaIndicators,
   fallbackCommodities,
   fallbackFunds,
   fallbackHistory,
   fallbackOverview,
   fallbackSearch
 } from "@/lib/fallback-data";
-import type { BondMetric, FundHolding, InstrumentDetail, MarketOverview, QuoteSnapshot } from "@/lib/types";
+import type { ArgentinaIndicator, BondMetric, FundHolding, InstrumentDetail, MarketOverview, QuoteSnapshot } from "@/lib/types";
 import { formatNumber } from "@/lib/format";
 import { getBcraCurrency, getBcraMacroCards } from "./providers/bcra";
-import { getBymaBondInfo, getBymaBonds, getBymaCedears, getBymaHistory, getBymaStocks } from "./providers/byma";
+import { getBymaBondInfo, getBymaBonds, getBymaCedears, getBymaHistory, getBymaIndexHistory, getBymaStocks } from "./providers/byma";
+import { getCountryRisk } from "./providers/argentina-datos";
 import { getData912Bonds, getData912Stocks } from "./providers/data912";
 import { getDolarApiFinancialCurrencies } from "./providers/dolarapi";
 import { getMaeBondCashFlow, getMaeBondMetrics } from "./providers/mae";
@@ -49,6 +51,33 @@ export function getCurrencies() {
   return cached("currencies", ttl.live, async () => {
     const [financial, official] = await Promise.all([getDolarApiFinancialCurrencies(), getBcraCurrency()]);
     return bySymbol([...financial, official]);
+  });
+}
+
+export function getArgentinaIndicators() {
+  return cached("argentina-indicators", ttl.live, async (): Promise<ArgentinaIndicator[]> => {
+    try {
+      const [currencies, countryRisk, merval] = await Promise.all([getCurrencies(), getCountryRisk(), getBymaIndexHistory()]);
+      const mep = currencies.find((item) => item.symbol === "USDMEP")?.price;
+      const ccl = currencies.find((item) => item.symbol === "USDCCL")?.price;
+      const latestMerval = merval.at(-1);
+      const previousMerval = merval.at(-2);
+      if (!mep || !ccl || !latestMerval?.close) throw new Error("Indicadores argentinos incompletos");
+
+      return [
+        { label: "Riesgo país", value: countryRisk.valor, source: "ArgentinaDatos", format: "points" },
+        { label: "Brecha CCL / MEP", value: ((ccl / mep) - 1) * 100, source: "DolarAPI", format: "percent" },
+        {
+          label: "S&P Merval en USD",
+          value: latestMerval.close / ccl,
+          delta: previousMerval?.close ? ((latestMerval.close / previousMerval.close) - 1) * 100 : undefined,
+          source: "BYMA + DolarAPI",
+          format: "usd"
+        }
+      ];
+    } catch {
+      return fallbackArgentinaIndicators;
+    }
   });
 }
 

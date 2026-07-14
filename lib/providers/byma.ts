@@ -128,3 +128,21 @@ export async function getBymaHistory(symbol: string, resolution = "D"): Promise<
     }))
     .filter((bar) => [bar.open, bar.high, bar.low, bar.close].every(Number.isFinite));
 }
+
+export async function getBymaIndexHistory(symbol = "M"): Promise<HistoricalBar[]> {
+  const to = Math.floor(Date.now() / 1000);
+  const from = to - 14 * 24 * 60 * 60;
+  const url = `${base}/chart/index-historical-series/history?symbol=${encodeURIComponent(symbol)}&resolution=D&from=${from}&to=${to}`;
+  const response = await fetchJsonUnsafeTls<BymaHistory>(url);
+  if (response.s !== "ok") return [];
+  return response.t
+    .map((time, index) => ({
+      time: new Date(time * 1000).toISOString().slice(0, 10),
+      open: response.o[index],
+      high: response.h[index],
+      low: response.l[index],
+      close: response.c[index],
+      volume: response.v[index]
+    }))
+    .filter((bar) => [bar.open, bar.high, bar.low, bar.close].every(Number.isFinite));
+}

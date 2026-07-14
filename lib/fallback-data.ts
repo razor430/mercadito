@@ -1,4 +1,5 @@
 import type {
+  ArgentinaIndicator,
   BondMetric,
   CurrencyRate,
   HistoricalBar,
@@ -237,6 +238,12 @@ export const fallbackCurrencies: CurrencyRate[] = [
   { symbol: "USDCCL", name: "Dólar CCL", price: 1471.54, change: -4.8, changePercent: -0.33, source: "Fallback", updatedAt: now() },
   { symbol: "USDARS", name: "Dólar oficial", price: 905.5, change: 1.5, changePercent: 0.17, source: "Fallback", updatedAt: now() },
   { symbol: "EURUSD", name: "Euro / Dólar", price: 1.083, change: 0.002, changePercent: 0.18, source: "Fallback", updatedAt: now() }
+];
+
+export const fallbackArgentinaIndicators: ArgentinaIndicator[] = [
+  { label: "Riesgo país", value: 700, source: "Fallback", format: "points" },
+  { label: "Brecha CCL / MEP", value: 3.31, source: "Fallback", format: "percent" },
+  { label: "S&P Merval en USD", value: 1100, source: "Fallback", format: "usd" }
 ];
 
 export const fallbackCommodities: QuoteSnapshot[] = [

@@ -104,6 +104,14 @@ export interface CurrencyRate {
   updatedAt: string;
 }
 
+export interface ArgentinaIndicator {
+  label: string;
+  value: number;
+  delta?: number;
+  source: DataSource | string;
+  format: "points" | "percent" | "usd";
+}
+
 export interface HistoricalBar {
   time: string;
   open: number;

@@ -4,7 +4,7 @@ import { BarChart3, CircleDollarSign, Newspaper, RefreshCw, Search } from "lucid
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { AssetShareChart, PriceChart, VolumeChart } from "@/components/charts";
-import { CurrencyStrip } from "@/components/currency-strip";
+import { ArgentinaIndicators } from "@/components/argentina-indicators";
 import { MarketTable } from "@/components/market-table";
 import { MetricCard } from "@/components/metric-card";
 import { NewsFeed } from "@/components/news-feed";
@@ -12,13 +12,13 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { useMarketData } from "@/components/use-market-data";
 import { isPesoBond } from "@/lib/bond-filters";
 import { formatDateTime } from "@/lib/format";
-import type { BondMetric, CurrencyRate, MarketOverview, NewsItem, QuoteSnapshot, SearchResult } from "@/lib/types";
+import type { ArgentinaIndicator, BondMetric, MarketOverview, NewsItem, QuoteSnapshot, SearchResult } from "@/lib/types";
 
 type Props = {
   initialOverview: MarketOverview;
   initialStocks: QuoteSnapshot[];
   initialBonds: BondMetric[];
-  initialCurrencies: CurrencyRate[];
+  initialArgentinaIndicators: ArgentinaIndicator[];
   initialCommodities: QuoteSnapshot[];
   initialNews: NewsItem[];
 };
@@ -29,7 +29,7 @@ export function Dashboard(props: Props) {
   const overview = useMarketData("/api/market/overview", props.initialOverview);
   const stocks = useMarketData("/api/market/stocks", props.initialStocks);
   const bonds = useMarketData("/api/market/bonds", props.initialBonds);
-  const currencies = useMarketData("/api/market/currencies", props.initialCurrencies);
+  const argentinaIndicators = useMarketData("/api/market/argentina-indicators", props.initialArgentinaIndicators);
   const commodities = useMarketData("/api/market/commodities", props.initialCommodities, 120_000);
   const news = useMarketData("/api/market/news", props.initialNews, 300_000);
   const [query, setQuery] = useState("");
@@ -142,7 +142,7 @@ export function Dashboard(props: Props) {
                 </div>
               ) : null}
             </div>
-            <CurrencyStrip rows={currencies.data} />
+            <ArgentinaIndicators rows={argentinaIndicators.data} />
           </aside>
         </section>
 
