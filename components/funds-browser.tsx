@@ -271,7 +271,10 @@ export function FundsBrowser({ funds }: { funds: FundSnapshot[] }) {
         </div>
         </section>
 
-        <section className="rounded border border-line bg-white shadow-table dark:border-slate-700 dark:bg-slate-900">
+        <FundHoldingsChart fund={selectedFund} />
+      </div>
+
+      <section className="rounded border border-line bg-white shadow-table dark:border-slate-700 dark:bg-slate-900">
         {selectedFund ? (
           <>
             <div className="border-b border-line px-3 py-3 dark:border-slate-700">
@@ -348,10 +351,7 @@ export function FundsBrowser({ funds }: { funds: FundSnapshot[] }) {
         ) : (
           <div className="p-3 text-sm text-ink/60 dark:text-slate-400">Sin fondos disponibles.</div>
         )}
-        </section>
-      </div>
-
-      <FundHoldingsChart fund={selectedFund} />
+      </section>
     </div>
   );
 }
