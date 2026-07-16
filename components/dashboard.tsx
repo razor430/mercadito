@@ -3,14 +3,14 @@
 import { BarChart3, CircleDollarSign, Newspaper, RefreshCw, Search } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { AssetShareChart, PriceChart, VolumeChart } from "@/components/charts";
+import { BondHeatmap, MervalHeatmap } from "@/components/charts";
 import { ArgentinaIndicators } from "@/components/argentina-indicators";
 import { MarketTable } from "@/components/market-table";
 import { MetricCard } from "@/components/metric-card";
 import { NewsFeed } from "@/components/news-feed";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useMarketData } from "@/components/use-market-data";
-import { isPesoBond } from "@/lib/bond-filters";
+import { isDollarBondQuotedInPesos, isPesoBond } from "@/lib/bond-filters";
 import { formatDateTime } from "@/lib/format";
 import type { ArgentinaIndicator, BondMetric, MarketOverview, NewsItem, QuoteSnapshot, SearchResult } from "@/lib/types";
 
@@ -35,11 +35,10 @@ export function Dashboard(props: Props) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
 
-  const allRows = useMemo(() => [...stocks.data, ...bonds.data, ...commodities.data], [stocks.data, bonds.data, commodities.data]);
   const argStocks = useMemo(() => stocks.data.filter((row) => row.type === "stock"), [stocks.data]);
   const cedears = useMemo(() => stocks.data.filter((row) => row.type === "cedear"), [stocks.data]);
   const pesoBonds = useMemo(() => bonds.data.filter(isPesoBond), [bonds.data]);
-  const selectedSymbol = bonds.data[0]?.symbol ?? stocks.data[0]?.symbol ?? "AL30";
+  const dollarBondsInPesos = useMemo(() => bonds.data.filter(isDollarBondQuotedInPesos), [bonds.data]);
 
   async function runSearch(value: string) {
     setQuery(value);
@@ -146,10 +145,9 @@ export function Dashboard(props: Props) {
           </aside>
         </section>
 
-        <section className="mt-3 grid gap-3 xl:grid-cols-[1.2fr_0.8fr_0.8fr]">
-          <PriceChart symbol={selectedSymbol} />
-          <VolumeChart rows={allRows} />
-          <AssetShareChart rows={allRows} />
+        <section className="mt-3 grid gap-3 xl:grid-cols-2">
+          <MervalHeatmap rows={stocks.data} />
+          <BondHeatmap rows={dollarBondsInPesos} />
         </section>
 
         <section id="acciones" className="mt-3">

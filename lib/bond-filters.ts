@@ -20,3 +20,13 @@ export function isPesoBond(bond: BondMetric) {
 
   return currency === "ARS" && !looksLikeDollarSpecies;
 }
+
+export function isDollarBondQuotedInPesos(bond: BondMetric) {
+  const symbol = normalizedSymbol(bond);
+  const name = bond.name.toUpperCase();
+  const isRequestedBond = ["AO27", "AO28", "AN29"].includes(symbol);
+  const isCommonDollarSovereign = /^(AL|GD|AE)\d{2}$/.test(symbol);
+  const isDollarDenominated = /\bUSD\b|D[ÓO]LAR/.test(name);
+
+  return bond.currency.trim().toUpperCase() === "ARS" && bond.price >= 1_000 && (isRequestedBond || isCommonDollarSovereign || isDollarDenominated);
+}
