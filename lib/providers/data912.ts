@@ -1,5 +1,5 @@
 import { fallbackBonds, fallbackCurrencies, fallbackStocks } from "@/lib/fallback-data";
-import type { BondMetric, CurrencyRate, QuoteSnapshot } from "@/lib/types";
+import type { BondMetric, CurrencyRate, HistoricalBar, QuoteSnapshot } from "@/lib/types";
 import { fetchJson } from "./http";
 
 type Data912Row = Record<string, string | number | null | undefined>;
@@ -32,6 +32,9 @@ function rowToQuote(row: Data912Row, type: QuoteSnapshot["type"], market = "BYMA
     change,
     changePercent,
     volume: num(row.v ?? row.volume),
+    peRatio: num(row.peRatio ?? row.pe ?? row.priceEarnings),
+    beta: num(row.beta),
+    bookValue: num(row.bookValue ?? row.book_value ?? row.valorLibro),
     sector: String(row.sector ?? ""),
     source: "Data912",
     updatedAt: new Date().toISOString()
@@ -50,6 +53,21 @@ export async function getData912Stocks(): Promise<QuoteSnapshot[]> {
   } catch {
     return fallbackStocks;
   }
+}
+
+export async function getData912StockHistory(symbol: string): Promise<HistoricalBar[]> {
+  const rows = await fetchJson<Data912Row[]>(`${base}/historical/stocks/${encodeURIComponent(symbol)}`);
+  return rows
+    .map((row) => ({
+      time: String(row.date ?? row.time ?? ""),
+      open: num(row.o ?? row.open) ?? NaN,
+      high: num(row.h ?? row.high) ?? NaN,
+      low: num(row.l ?? row.low) ?? NaN,
+      close: num(row.c ?? row.close) ?? NaN,
+      volume: num(row.v ?? row.volume) ?? 0
+    }))
+    .filter((bar) => bar.time && [bar.open, bar.high, bar.low, bar.close].every(Number.isFinite))
+    .sort((a, b) => a.time.localeCompare(b.time));
 }
 
 export async function getData912Bonds(): Promise<BondMetric[]> {

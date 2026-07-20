@@ -40,6 +40,9 @@ function toQuote(row: BymaRow, type: QuoteSnapshot["type"]): QuoteSnapshot {
     change,
     changePercent,
     volume: num(row.volumeAmount ?? row.tradeVolume ?? row.volume),
+    peRatio: num(row.peRatio ?? row.pe ?? row.priceEarnings),
+    beta: num(row.beta),
+    bookValue: num(row.bookValue ?? row.valorLibro),
     source: "BYMA",
     updatedAt: new Date().toISOString()
   };
@@ -129,9 +132,9 @@ export async function getBymaHistory(symbol: string, resolution = "D"): Promise<
     .filter((bar) => [bar.open, bar.high, bar.low, bar.close].every(Number.isFinite));
 }
 
-export async function getBymaIndexHistory(symbol = "M"): Promise<HistoricalBar[]> {
+export async function getBymaIndexHistory(symbol = "M", days = 14): Promise<HistoricalBar[]> {
   const to = Math.floor(Date.now() / 1000);
-  const from = to - 14 * 24 * 60 * 60;
+  const from = to - days * 24 * 60 * 60;
   const url = `${base}/chart/index-historical-series/history?symbol=${encodeURIComponent(symbol)}&resolution=D&from=${from}&to=${to}`;
   const response = await fetchJsonUnsafeTls<BymaHistory>(url);
   if (response.s !== "ok") return [];

@@ -25,9 +25,13 @@ export interface QuoteSnapshot {
   previousClose?: number;
   change: number;
   changePercent: number;
+  monthChangePercent?: number;
+  ytdChangePercent?: number;
   volume?: number;
   marketCap?: number;
   peRatio?: number;
+  beta?: number;
+  bookValue?: number;
   sector?: string;
   source: DataSource;
   updatedAt: string;
@@ -90,6 +94,7 @@ export interface BondCashFlowProfile {
 export interface InstrumentDetail {
   quote: QuoteSnapshot | BondMetric;
   history: HistoricalBar[];
+  benchmarkHistory?: HistoricalBar[];
   bondInfo?: BondTechnicalInfo;
   bondCashFlow?: BondCashFlowProfile;
 }

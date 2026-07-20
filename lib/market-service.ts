@@ -8,12 +8,12 @@ import {
   fallbackOverview,
   fallbackSearch
 } from "@/lib/fallback-data";
-import type { ArgentinaIndicator, BondMetric, FundHolding, InstrumentDetail, MarketOverview, QuoteSnapshot } from "@/lib/types";
+import type { ArgentinaIndicator, BondMetric, FundHolding, HistoricalBar, InstrumentDetail, MarketOverview, QuoteSnapshot } from "@/lib/types";
 import { formatNumber } from "@/lib/format";
 import { getBcraCurrency, getBcraMacroCards } from "./providers/bcra";
 import { getBymaBondInfo, getBymaBonds, getBymaCedears, getBymaHistory, getBymaIndexHistory, getBymaStocks } from "./providers/byma";
 import { getCountryRisk } from "./providers/argentina-datos";
-import { getData912Bonds, getData912Stocks } from "./providers/data912";
+import { getData912Bonds, getData912StockHistory, getData912Stocks } from "./providers/data912";
 import { getDolarApiFinancialCurrencies } from "./providers/dolarapi";
 import { getMaeBondCashFlow, getMaeBondMetrics } from "./providers/mae";
 import { getTradingViewNews, searchTradingView } from "./providers/tradingview";
@@ -26,7 +26,35 @@ function bySymbol<T extends { symbol: string }>(items: T[]) {
 }
 
 export function getStocks() {
-  return cached("stocks", ttl.live, async () => bySymbol([...(await getData912Stocks()), ...(await getBymaStocks()), ...(await getBymaCedears())]));
+  return cached("stocks", ttl.live, async () => {
+    const quotes = bySymbol([...(await getData912Stocks()), ...(await getBymaStocks()), ...(await getBymaCedears())]);
+    const performances = await Promise.all(
+      quotes.map(async (quote) => {
+        if (quote.type !== "stock") return quote;
+        const history = await cached(`stock-history:${quote.symbol}`, ttl.history, () => getData912StockHistory(quote.symbol)).catch(() => [] as HistoricalBar[]);
+        return { ...quote, ...calculatePeriodPerformance(history) };
+      })
+    );
+    return performances;
+  });
+}
+
+function calculatePeriodPerformance(history: HistoricalBar[]): Pick<QuoteSnapshot, "monthChangePercent" | "ytdChangePercent"> {
+  const latest = history.at(-1);
+  if (!latest?.close) return {};
+
+  const today = new Date();
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0, 10);
+  const yearStart = new Date(today.getFullYear(), 0, 1).toISOString().slice(0, 10);
+  const changeSince = (start: string) => {
+    const base = [...history].reverse().find((bar) => bar.time < start)?.close;
+    return base ? ((latest.close / base) - 1) * 100 : undefined;
+  };
+
+  return {
+    monthChangePercent: changeSince(monthStart),
+    ytdChangePercent: changeSince(yearStart)
+  };
 }
 
 export function getBonds() {
@@ -200,10 +228,11 @@ export async function getInstrumentDetail(symbol: string): Promise<InstrumentDet
   const quote = [...stocks, ...bonds, ...commodities].find((item) => item.symbol.toUpperCase() === normalized);
   if (!quote) return undefined;
 
-  const [history, bondInfo, bondCashFlow] = await Promise.all([
+  const [history, bondInfo, bondCashFlow, benchmarkHistory] = await Promise.all([
     getHistory(quote.symbol, quote.source === "BYMA" || quote.market === "BYMA" ? "BYMA" : undefined).catch(() => fallbackHistory(quote.symbol)),
     quote.type === "bond" ? getBymaBondInfo(quote.symbol).catch(() => undefined) : Promise.resolve(undefined),
-    quote.type === "bond" ? getMaeBondCashFlow(quote.symbol).catch(() => undefined) : Promise.resolve(undefined)
+    quote.type === "bond" ? getMaeBondCashFlow(quote.symbol).catch(() => undefined) : Promise.resolve(undefined),
+    quote.type === "stock" ? getBymaIndexHistory("M", 365).catch(() => [] as HistoricalBar[]) : Promise.resolve([] as HistoricalBar[])
   ]);
 
   const bondQuote = quote as BondMetric;
@@ -219,5 +248,5 @@ export async function getInstrumentDetail(symbol: string): Promise<InstrumentDet
         }
       : quote;
 
-  return { quote: enrichedQuote, history, bondInfo, bondCashFlow };
+  return { quote: enrichedQuote, history, benchmarkHistory, bondInfo, bondCashFlow };
 }

@@ -35,7 +35,6 @@ export function Dashboard(props: Props) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
 
-  const argStocks = useMemo(() => stocks.data.filter((row) => row.type === "stock"), [stocks.data]);
   const cedears = useMemo(() => stocks.data.filter((row) => row.type === "cedear"), [stocks.data]);
   const pesoBonds = useMemo(() => bonds.data.filter(isPesoBond), [bonds.data]);
   const dollarBondsInPesos = useMemo(() => bonds.data.filter(isDollarBondQuotedInPesos), [bonds.data]);
@@ -68,6 +67,11 @@ export function Dashboard(props: Props) {
             {nav.map((item) => (
               <a
                 key={item}
+                onClick={(event) => {
+                  if (item !== "Acciones") return;
+                  event.preventDefault();
+                  window.location.assign("/acciones");
+                }}
                 href={`#${item.toLowerCase().replace("ó", "o")}`}
                 className="whitespace-nowrap rounded border border-transparent px-2 py-1.5 text-ink/75 hover:border-line hover:bg-panel dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-900"
               >
@@ -148,10 +152,6 @@ export function Dashboard(props: Props) {
         <section className="mt-3 grid gap-3 xl:grid-cols-2">
           <MervalHeatmap rows={stocks.data} />
           <BondHeatmap rows={dollarBondsInPesos} />
-        </section>
-
-        <section id="acciones" className="mt-3">
-          <MarketTable title="Acciones argentinas" rows={argStocks} />
         </section>
 
         <section id="cedears" className="mt-3">

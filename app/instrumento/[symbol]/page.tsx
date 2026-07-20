@@ -4,10 +4,11 @@ import { notFound } from "next/navigation";
 import { PriceChart } from "@/components/charts";
 import { compactNumber, formatDateTime, formatNumber, formatPercent } from "@/lib/format";
 import { getInstrumentDetail } from "@/lib/market-service";
-import type { BondCashFlowProfile, BondMetric, BondTechnicalInfo, QuoteSnapshot } from "@/lib/types";
+import type { BondCashFlowProfile, BondMetric, BondTechnicalInfo, HistoricalBar, QuoteSnapshot } from "@/lib/types";
 
 type Props = {
   params: Promise<{ symbol: string }>;
+  searchParams: Promise<{ origen?: string }>;
 };
 
 function isBond(quote: QuoteSnapshot | BondMetric): quote is BondMetric {
@@ -28,6 +29,82 @@ function DetailStat({ label, value }: { label: string; value: string }) {
       <span className="text-[11px] font-bold uppercase text-ink/55">{label}</span>
       <strong className="mt-1 block text-sm text-ink">{value}</strong>
     </div>
+  );
+}
+
+function movingAverage(history: HistoricalBar[], period: number) {
+  if (history.length < period) return undefined;
+  const closes = history.slice(-period).map((bar) => bar.close);
+  return closes.reduce((sum, close) => sum + close, 0) / closes.length;
+}
+
+function rsi(history: HistoricalBar[], period = 14) {
+  if (history.length <= period) return undefined;
+  let gains = 0;
+  let losses = 0;
+  const closes = history.slice(-(period + 1)).map((bar) => bar.close);
+  for (let index = 1; index < closes.length; index += 1) {
+    const change = closes[index]! - closes[index - 1]!;
+    if (change >= 0) gains += change;
+    else losses -= change;
+  }
+  if (losses === 0) return 100;
+  const relativeStrength = gains / losses;
+  return 100 - 100 / (1 + relativeStrength);
+}
+
+function beta(history: HistoricalBar[], benchmark: HistoricalBar[]) {
+  const benchmarkByDate = new Map(benchmark.map((bar) => [bar.time, bar.close]));
+  const aligned = history
+    .map((bar) => ({ asset: bar.close, benchmark: benchmarkByDate.get(bar.time) }))
+    .filter((bar): bar is { asset: number; benchmark: number } => bar.benchmark !== undefined)
+    .slice(-61);
+  if (aligned.length < 11) return undefined;
+
+  const returns = aligned.slice(1).map((current, index) => ({
+    asset: current.asset / aligned[index]!.asset - 1,
+    benchmark: current.benchmark / aligned[index]!.benchmark - 1
+  }));
+  const averageAsset = returns.reduce((sum, value) => sum + value.asset, 0) / returns.length;
+  const averageBenchmark = returns.reduce((sum, value) => sum + value.benchmark, 0) / returns.length;
+  const variance = returns.reduce((sum, value) => sum + (value.benchmark - averageBenchmark) ** 2, 0);
+  if (variance === 0) return undefined;
+  const covariance = returns.reduce((sum, value) => sum + (value.asset - averageAsset) * (value.benchmark - averageBenchmark), 0);
+  return covariance / variance;
+}
+
+function IndicatorsPanel({ quote, history, benchmarkHistory }: { quote: QuoteSnapshot | BondMetric; history: HistoricalBar[]; benchmarkHistory: HistoricalBar[] }) {
+  const technical = [
+    { label: "Media móvil 50", value: formatNumber(movingAverage(history, 50), 2) },
+    { label: "Media móvil 200", value: formatNumber(movingAverage(history, 200), 2) },
+    { label: "RSI (14)", value: formatNumber(rsi(history), 2) }
+  ];
+  const fundamentals = [
+    { label: "P/E", value: formatNumber(quote.peRatio, 2) },
+    { label: "Beta vs. Merval", value: formatNumber(quote.beta ?? beta(history, benchmarkHistory), 2) },
+    { label: "Valor libro", value: formatNumber(quote.bookValue, 2) }
+  ];
+
+  return (
+    <section className="rounded border border-line bg-white shadow-table">
+      <div className="border-b border-line px-3 py-2">
+        <h2 className="text-sm font-bold uppercase tracking-normal text-ink">Indicadores</h2>
+      </div>
+      <div className="grid gap-3 p-3 sm:grid-cols-2">
+        <div>
+          <h3 className="mb-2 text-xs font-bold uppercase text-ink/55">Técnicos</h3>
+          <div className="grid gap-2 sm:grid-cols-3">
+            {technical.map((indicator) => <DetailStat key={indicator.label} {...indicator} />)}
+          </div>
+        </div>
+        <div>
+          <h3 className="mb-2 text-xs font-bold uppercase text-ink/55">Fundamentales</h3>
+          <div className="grid gap-2 sm:grid-cols-3">
+            {fundamentals.map((indicator) => <DetailStat key={indicator.label} {...indicator} />)}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -117,20 +194,23 @@ function BondCashFlowPanel({ profile }: { profile?: BondCashFlowProfile }) {
   );
 }
 
-export default async function InstrumentPage({ params }: Props) {
+export default async function InstrumentPage({ params, searchParams }: Props) {
   const { symbol } = await params;
+  const { origen } = await searchParams;
   const detail = await getInstrumentDetail(decodeURIComponent(symbol));
   if (!detail) notFound();
 
-  const { quote, history, bondInfo, bondCashFlow } = detail;
+  const { quote, history, benchmarkHistory = [], bondInfo, bondCashFlow } = detail;
   const quoteIsBond = isBond(quote);
+  const returnHref = origen === "acciones" ? "/acciones" : "/#mercado";
+  const returnLabel = origen === "acciones" ? "Volver a acciones" : "Volver al panel";
   const sourceLine = `${quote.market} · ${quote.source} · ${formatDateTime(quote.updatedAt)}`;
 
   return (
     <main className="mx-auto max-w-7xl px-3 py-4">
-      <Link href="/#mercado" className="inline-flex items-center gap-2 rounded border border-line bg-white px-3 py-2 text-sm text-ink shadow-table hover:bg-panel">
+      <Link href={returnHref} className="inline-flex items-center gap-2 rounded border border-line bg-white px-3 py-2 text-sm text-ink shadow-table hover:bg-panel">
         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-        Volver al panel
+        {returnLabel}
       </Link>
 
       <header className="mt-3 rounded border border-line bg-white p-4 shadow-table">
@@ -168,7 +248,10 @@ export default async function InstrumentPage({ params }: Props) {
       </section>
 
       <section className="mt-3 grid gap-3 xl:grid-cols-[1fr_360px]">
-        <PriceChart symbol={quote.symbol} initialBars={history} />
+        <div className="space-y-3">
+          <PriceChart symbol={quote.symbol} initialBars={history} />
+          <IndicatorsPanel quote={quote} history={history} benchmarkHistory={benchmarkHistory} />
+        </div>
         <aside className="rounded border border-line bg-white p-3 shadow-table">
           <div className="mb-3 flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-gain" aria-hidden="true" />
