@@ -138,6 +138,26 @@ function fallbackRows(): CryptoBasisRow[] {
       futurePrice: 3_750,
       deliveryDate: now + 180 * 86_400_000,
       source: "Fallback"
+    }),
+    buildRow({
+      asset: "BTC",
+      spotSymbol: "BTCUSDT",
+      futureSymbol: "BTCUSD_EXTENDED",
+      contractLabel: "Extendido",
+      spotPrice: 105_000,
+      futurePrice: 111_600,
+      deliveryDate: now + 270 * 86_400_000,
+      source: "Fallback"
+    }),
+    buildRow({
+      asset: "ETH",
+      spotSymbol: "ETHUSDT",
+      futureSymbol: "ETHUSD_EXTENDED",
+      contractLabel: "Extendido",
+      spotPrice: 3_600,
+      futurePrice: 3_840,
+      deliveryDate: now + 270 * 86_400_000,
+      source: "Fallback"
     })
   ];
 }
@@ -224,11 +244,14 @@ function selectDeliveryContracts(symbols: BinanceDeliverySymbol[], pair: string)
         item.deliveryDate > Date.now()
     )
     .sort((a, b) => a.deliveryDate - b.deliveryDate);
-  const current = tradable.find((item) => item.contractType === "CURRENT_QUARTER") ?? tradable[0];
-  const longer =
-    tradable.find((item) => item.contractType === "NEXT_QUARTER") ??
-    tradable.findLast((item) => item.symbol !== current?.symbol);
-  return [current, longer].filter((item): item is BinanceDeliverySymbol => Boolean(item));
+  const current = tradable.find((item) => item.contractType === "CURRENT_QUARTER");
+  const next = tradable.find((item) => item.contractType === "NEXT_QUARTER");
+  const selected = [current, next, ...tradable].filter(
+    (item, index, contracts): item is BinanceDeliverySymbol =>
+      Boolean(item) && contracts.findIndex((candidate) => candidate?.symbol === item?.symbol) === index
+  );
+
+  return selected.slice(0, 3);
 }
 
 function contractLabel(contractType: string) {
