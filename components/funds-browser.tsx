@@ -183,7 +183,24 @@ function FundHoldingsChart({ fund }: { fund?: FundSnapshot }) {
 export function FundsBrowser({ funds }: { funds: FundSnapshot[] }) {
   const [query, setQuery] = useState("");
   const [managerFilter, setManagerFilter] = useState("all");
-  const [selectedId, setSelectedId] = useState(funds[0]?.id);
+  const [pendingManager, setPendingManager] = useState<string | undefined>();
+  const [selectedId, setSelectedId] = useState<number | undefined>(funds[0]?.id);
+
+  function selectManager(manager: string) {
+    // Render an empty state before applying the next filter so no fund from
+    // the previously selected manager remains visible during the change.
+    setSelectedId(undefined);
+    setPendingManager(manager);
+  }
+
+  useEffect(() => {
+    if (pendingManager === undefined) return;
+
+    setManagerFilter(pendingManager);
+    const nextFund = funds.find((fund) => pendingManager === "all" || fund.manager === pendingManager);
+    setSelectedId(nextFund?.id);
+    setPendingManager(undefined);
+  }, [funds, pendingManager]);
 
   const managers = useMemo(
     () => ["all", ...Array.from(new Set(funds.flatMap((fund) => fund.manager ? [fund.manager] : []))).toSorted()],
@@ -199,7 +216,9 @@ export function FundsBrowser({ funds }: { funds: FundSnapshot[] }) {
       return matchesManager && matchesQuery;
     });
   }, [funds, managerFilter, query]);
-  const selectedFund = filteredFunds.find((fund) => fund.id === selectedId) ?? filteredFunds[0];
+  const selectedFund = pendingManager === undefined
+    ? filteredFunds.find((fund) => fund.id === selectedId) ?? filteredFunds[0]
+    : undefined;
 
   return (
     <div className="space-y-3">
@@ -208,7 +227,7 @@ export function FundsBrowser({ funds }: { funds: FundSnapshot[] }) {
         <div className="border-b border-line px-3 py-2 dark:border-slate-700">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-sm font-bold uppercase tracking-normal text-ink dark:text-slate-100">Fondos CAFCI</h2>
-            <span className="text-xs text-ink/55 dark:text-slate-400">{filteredFunds.length} fondos</span>
+            <span className="text-xs text-ink/55 dark:text-slate-400">{pendingManager === undefined ? `${filteredFunds.length} fondos` : "Cargando fondos..."}</span>
           </div>
           <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_220px]">
             <label className="relative block">
@@ -221,8 +240,8 @@ export function FundsBrowser({ funds }: { funds: FundSnapshot[] }) {
               />
             </label>
             <select
-              value={managerFilter}
-              onChange={(event) => setManagerFilter(event.target.value)}
+              value={pendingManager ?? managerFilter}
+              onChange={(event) => selectManager(event.target.value)}
               aria-label="Filtrar por administradora"
               className="h-9 rounded border border-line bg-panel px-2 text-sm text-ink dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
             >
@@ -236,7 +255,7 @@ export function FundsBrowser({ funds }: { funds: FundSnapshot[] }) {
         </div>
 
         <div className="max-h-[calc(100vh-210px)] overflow-y-auto">
-          {filteredFunds.length ? filteredFunds.map((fund) => {
+          {pendingManager !== undefined ? null : filteredFunds.length ? filteredFunds.map((fund) => {
             const active = fund.id === selectedFund?.id;
             return (
               <button

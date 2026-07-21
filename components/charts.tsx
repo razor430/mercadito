@@ -137,17 +137,23 @@ function heatmapTone(changePercent: number) {
   return "bg-panel text-ink dark:bg-slate-800 dark:text-slate-100";
 }
 
-function withVolumeGridSpans<T extends { volume?: number }>(rows: T[]) {
+function withVolumeGridSpans<T extends { volume?: number }>(
+  rows: T[],
+  { maxColumnSpan = 12, maxRowSpan = 4, minColumnSpan = 3, contrast = 0.5 } = {}
+) {
   const maxVolume = Math.max(...rows.map((row) => row.volume ?? 0), 1);
 
   return rows.map((row) => {
-    // El ancho y el alto usan la raíz del ratio: su área resultante mantiene
-    // una proporción aproximada con el volumen, sin que un outlier opaque al resto.
-    const side = Math.sqrt(Math.max((row.volume ?? 0) / maxVolume, 0.02));
+    const side = Math.pow(Math.max((row.volume ?? 0) / maxVolume, 0.02), contrast);
+    const columnSpan = Math.min(maxColumnSpan, Math.max(minColumnSpan, Math.round(side * maxColumnSpan)));
+    const rowSpan = Math.min(maxRowSpan, Math.max(1, Math.round(side * maxRowSpan)));
+    const area = columnSpan * rowSpan;
     return {
       ...row,
-      columnSpan: Math.min(12, Math.max(3, Math.round(side * 12))),
-      rowSpan: Math.min(4, Math.max(1, Math.round(side * 4)))
+      columnSpan,
+      rowSpan,
+      textSize: area <= 2 ? "compact" : area <= 6 ? "small" : "regular",
+      showVolume: rowSpan > 1 || columnSpan >= 5
     };
   });
 }
@@ -164,27 +170,27 @@ export function MervalHeatmap({ rows }: { rows: QuoteSnapshot[] }) {
     const leadingStocks = rows
       .filter(isMervalLeaderStock)
       .sort((a, b) => (b.volume ?? 0) - (a.volume ?? 0));
-    return withVolumeGridSpans(leadingStocks);
+    return withVolumeGridSpans(leadingStocks, { maxColumnSpan: 8, maxRowSpan: 3, minColumnSpan: 2, contrast: 0.7 });
   }, [rows]);
 
   return (
     <section className="rounded border border-line bg-white shadow-table dark:border-slate-700 dark:bg-slate-900">
       <div className="flex items-center justify-between border-b border-line px-3 py-2 dark:border-slate-700">
         <h2 className="text-sm font-bold uppercase tracking-normal text-ink dark:text-slate-100">Heatmap panel líder</h2>
-        <span className="text-xs text-ink/55 dark:text-slate-400">BYMA · última rueda disponible</span>
+        <span className="text-xs text-ink/55 dark:text-slate-400">Área = volumen · BYMA</span>
       </div>
-      <div className="grid min-h-[260px] grid-cols-12 auto-rows-[80px] gap-1 p-1">
+      <div className="grid grid-cols-12 auto-rows-[56px] gap-1 p-2">
         {data.map((row) => (
           <div
             key={row.symbol}
-            className={`flex min-h-20 flex-col justify-between rounded p-3 ${heatmapTone(row.changePercent)}`}
+            className={`flex min-h-0 flex-col justify-between rounded p-2 ${heatmapTone(row.changePercent)}`}
             style={{ gridColumn: `span ${row.columnSpan}`, gridRow: `span ${row.rowSpan}` }}
             title={`${row.name}: ${formatNumber(row.changePercent)}%, volumen ${compactNumber(row.volume)}`}
           >
-            <strong className="text-sm font-black">{row.symbol}</strong>
+            <strong className={row.textSize === "compact" ? "text-[10px] font-black" : row.textSize === "small" ? "text-xs font-black" : "text-sm font-black"}>{row.symbol}</strong>
             <div>
-              <span className="numeric block text-sm font-bold">{formatPercent(row.changePercent)}</span>
-              <span className="mt-1 block text-[11px] font-medium opacity-80">Vol. {compactNumber(row.volume)}</span>
+              <span className={`numeric block font-bold ${row.textSize === "compact" ? "text-[10px]" : row.textSize === "small" ? "text-xs" : "text-sm"}`}>{formatPercent(row.changePercent)}</span>
+              <span className={`mt-1 block truncate font-medium opacity-80 ${row.textSize === "compact" || row.textSize === "small" ? "text-[10px]" : "text-[11px]"}`}>Vol. {compactNumber(row.volume)}</span>
             </div>
           </div>
         ))}
@@ -204,20 +210,20 @@ export function BondHeatmap({ rows }: { rows: BondMetric[] }) {
     <section className="rounded border border-line bg-white shadow-table dark:border-slate-700 dark:bg-slate-900">
       <div className="flex items-center justify-between border-b border-line px-3 py-2 dark:border-slate-700">
         <h2 className="text-sm font-bold uppercase tracking-normal text-ink dark:text-slate-100">Heatmap bonos USD en pesos</h2>
-        <span className="text-xs text-ink/55 dark:text-slate-400">Incluye AO27, AO28 y AN29</span>
+        <span className="text-xs text-ink/55 dark:text-slate-400">Área = volumen</span>
       </div>
       <div className="grid min-h-[260px] grid-cols-12 auto-rows-[80px] gap-1 p-1">
         {data.map((bond) => (
           <div
             key={bond.symbol}
-            className={`flex min-h-20 flex-col justify-between rounded p-3 ${heatmapTone(bond.changePercent)}`}
+            className={`flex min-h-0 min-w-0 flex-col justify-between overflow-hidden rounded p-2 ${heatmapTone(bond.changePercent)}`}
             style={{ gridColumn: `span ${bond.columnSpan}`, gridRow: `span ${bond.rowSpan}` }}
             title={`${bond.name}: ${formatNumber(bond.changePercent)}%, volumen ${compactNumber(bond.volume)}`}
           >
-            <strong className="text-sm font-black">{bond.symbol}</strong>
+            <strong className={bond.textSize === "compact" ? "text-[10px] font-black" : bond.textSize === "small" ? "text-xs font-black" : "text-sm font-black"}>{bond.symbol}</strong>
             <div>
-              <span className="numeric block text-sm font-bold">$ {formatNumber(bond.price, 2)}</span>
-              <span className="mt-1 block text-[11px] font-medium opacity-80">Vol. {compactNumber(bond.volume)}</span>
+              <span className={`numeric block font-bold ${bond.textSize === "compact" ? "text-[10px]" : bond.textSize === "small" ? "text-xs" : "text-sm"}`}>$ {formatNumber(bond.price, 2)}</span>
+              <span className={`mt-1 block truncate font-medium opacity-80 ${bond.textSize === "compact" || bond.textSize === "small" ? "text-[10px]" : "text-[11px]"}`}>Vol. {compactNumber(bond.volume)}</span>
             </div>
           </div>
         ))}

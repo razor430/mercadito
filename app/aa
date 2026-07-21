@@ -7,3 +7,8 @@ cd C:\Users\crist\OneDrive\Documentos\codex
 npm.cmd run dev -- --hostname 127.0.0.1 --port 3000
 
 npx skills add gauss314/skills
+
+npx plugins add vercel/vercel-plugin
+
+todo:sacar la columna nombre y tir, agregar columnas variacion desde principio de mes y año en ambas tablas
+luego merge y push
